@@ -3,7 +3,6 @@ const proxy = require('express-http-proxy');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Simple UI to enter target URLs
 app.get('/', (req, res) => {
   res.send(`
     <html>
@@ -19,19 +18,27 @@ app.get('/', (req, res) => {
   `);
 });
 
-// Proxy forwarder
 app.use('/browse', (req, res, next) => {
   const targetUrl = req.query.url;
   if (!targetUrl) return res.send("Please enter a URL.");
-  
+
   let targetHost;
   try {
     targetHost = new URL(targetUrl).origin;
   } catch (e) {
-    return res.send("Invalid URL. Make sure to include http:// or https://");
+    return res.send("Invalid URL. Include http:// or https://");
   }
 
-  return proxy(targetHost)(req, res, next);
+  return proxy(targetHost, {
+    proxyReqOptDecorator: (proxyReqOpts) => {
+      // Fake a standard Chrome browser header so Gelbooru doesn't mark it as a bot
+      proxyReqOpts.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+      proxyReqOpts.headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8';
+      proxyReqOpts.headers['Accept-Language'] = 'en-US,en;q=0.5';
+      proxyReqOpts.headers['Referer'] = targetHost;
+      return proxyReqOpts;
+    }
+  })(req, res, next);
 });
 
 app.listen(PORT, () => console.log(`Proxy running on port ${PORT}`));
