@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
       <body style="font-family:sans-serif; text-align:center; padding-top:50px;">
         <h2>Enter a website URL</h2>
         <form action="/browse" method="get">
-          <input type="text" name="url" placeholder="gelbooru.com" style="width:300px; padding:10px;">
+          <input type="text" name="url" placeholder=" " style="width:300px; padding:10px;">
           <button type="submit" style="padding:10px 15px;">Go</button>
         </form>
       </body>
